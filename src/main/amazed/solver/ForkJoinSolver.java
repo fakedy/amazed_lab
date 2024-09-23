@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * <code>ForkJoinPool</code> object.
  */
 
+// barack hussein obama
+
 
 public class ForkJoinSolver
     extends SequentialSolver
