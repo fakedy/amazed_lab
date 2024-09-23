@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * <code>ForkJoinPool</code> object.
  */
 
-// barack hussein obama
 
 
 public class ForkJoinSolver
@@ -33,6 +32,9 @@ public class ForkJoinSolver
     public ForkJoinSolver(Maze maze)
     {
         super(maze);
+
+
+        // hello
     }
 
     /**
