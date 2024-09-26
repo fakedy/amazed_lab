@@ -95,6 +95,7 @@ public class ForkJoinSolver
                 // move player to goal
                 maze.move(player, current);
                 // search finished: reconstruct and return path
+                this.complete(pathFromTo(start,current));
                 return pathFromTo(start, current);
             }
             // if current node has not been visited yet
@@ -120,6 +121,7 @@ public class ForkJoinSolver
             }
         }
         // all nodes explored, no goal found
+        this.complete(null);
         return null;
     }
 }
