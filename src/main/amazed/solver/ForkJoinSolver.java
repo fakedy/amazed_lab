@@ -30,7 +30,7 @@ public class ForkJoinSolver
      *
      * @param maze   the maze to be searched
      */
-    //protected ConcurrentSkipListSet<Integer> visited;
+    ArrayList<ForkJoinSolver> children = new ArrayList<>();
     public ForkJoinSolver(Maze maze)
     {
         super(maze);
@@ -48,15 +48,17 @@ public class ForkJoinSolver
      *                    <code>forkAfter &lt;= 0</code> the solver never
      *                    forks new tasks
      */
-    public ForkJoinSolver(Maze maze, int forkAfter)
+    public ForkJoinSolver(Maze maze,int forkAfter)
     {
         this(maze);
         this.forkAfter = forkAfter;
+        this.visited = new ConcurrentSkipListSet<>();
     }
-    public ForkJoinSolver(Maze maze, int forkAfter, int start)
+
+    public ForkJoinSolver(Maze maze,int start, Set<Integer> visited)
     {
         this(maze);
-        this.forkAfter = forkAfter;
+        this.visited = visited;
         this.start = start;
     }
 
@@ -106,16 +108,29 @@ public class ForkJoinSolver
                 // for every node nb adjacent to current
                 for (int nb: maze.neighbors(current)) {
                     // add nb to the nodes to be processed
-                    frontier.push(nb);
-
-                    if (maze.neighbors(current).size() > 1){
-                        ForkJoinSolver test = new ForkJoinSolver(this.maze, 1 ,nb);
-                        test.fork();
+                    if (!visited.contains(nb)) {
+                        frontier.push(nb);
                     }
                     // if nb has not been already visited,
                     // nb can be reached from current (i.e., current is nb's predecessor)
                     if (!visited.contains(nb))
                         predecessor.put(nb, current);
+                }
+                if (frontier.size() > 1){
+                    while(!frontier.isEmpty()){
+                        ForkJoinSolver child = new ForkJoinSolver(this.maze, frontier.pop(), visited);
+                        child.fork();
+                        children.add(child);
+                    }
+                }
+                //wait for children and if one child has found goal then return path
+                for (ForkJoinSolver fs : children){
+                    List<Integer> path = pathFromTo(start,current);
+                    if (fs.join() != null){
+                        List<Integer> partial = fs.join();
+                        path.addAll(partial);
+                        return path;
+                    }
                 }
             }
         }
