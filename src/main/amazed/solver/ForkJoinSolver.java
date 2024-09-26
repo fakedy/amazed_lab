@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * <code>ForkJoinPool</code> object.
  */
 
+// barack hussein obama
 
 
 public class ForkJoinSolver
@@ -29,12 +30,11 @@ public class ForkJoinSolver
      *
      * @param maze   the maze to be searched
      */
+    //protected ConcurrentSkipListSet<Integer> visited;
     public ForkJoinSolver(Maze maze)
     {
         super(maze);
 
-
-        // hello
     }
 
     /**
@@ -53,6 +53,14 @@ public class ForkJoinSolver
         this(maze);
         this.forkAfter = forkAfter;
     }
+    public ForkJoinSolver(Maze maze, int forkAfter, int start)
+    {
+        this(maze);
+        this.forkAfter = forkAfter;
+        this.start = start;
+    }
+
+
 
     /**
      * Searches for and returns the path, as a list of node
@@ -73,6 +81,45 @@ public class ForkJoinSolver
 
     private List<Integer> parallelSearch()
     {
+        //crap copied from super class
+        // one player active on the maze at start
+        int player = maze.newPlayer(start);
+        // start with start node
+        frontier.push(start);
+        // as long as not all nodes have been processed
+        while (!frontier.empty()) {
+            // get the new node to process
+            int current = frontier.pop();
+            // if current node has a goal
+            if (maze.hasGoal(current)) {
+                // move player to goal
+                maze.move(player, current);
+                // search finished: reconstruct and return path
+                return pathFromTo(start, current);
+            }
+            // if current node has not been visited yet
+            if (!visited.contains(current)) {
+                // move player to current node
+                maze.move(player, current);
+                // mark node as visited
+                visited.add(current);
+                // for every node nb adjacent to current
+                for (int nb: maze.neighbors(current)) {
+                    // add nb to the nodes to be processed
+                    frontier.push(nb);
+
+                    if (maze.neighbors(current).size() > 1){
+                        ForkJoinSolver test = new ForkJoinSolver(this.maze, 1 ,nb);
+                        test.fork();
+                    }
+                    // if nb has not been already visited,
+                    // nb can be reached from current (i.e., current is nb's predecessor)
+                    if (!visited.contains(nb))
+                        predecessor.put(nb, current);
+                }
+            }
+        }
+        // all nodes explored, no goal found
         return null;
     }
 }
