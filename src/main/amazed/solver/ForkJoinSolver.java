@@ -30,7 +30,6 @@ public class ForkJoinSolver
      *
      * @param maze   the maze to be searched
      */
-    //protected ConcurrentSkipListSet<Integer> visited;
     public ForkJoinSolver(Maze maze)
     {
         super(maze);
@@ -52,12 +51,14 @@ public class ForkJoinSolver
     {
         this(maze);
         this.forkAfter = forkAfter;
+        this.visited = new ConcurrentSkipListSet<>();
     }
-    public ForkJoinSolver(Maze maze, int forkAfter, int start)
+    public ForkJoinSolver(Maze maze, int forkAfter, int start, Set<Integer> visited)
     {
         this(maze);
         this.forkAfter = forkAfter;
         this.start = start;
+        this.visited = visited;
     }
 
 
@@ -95,7 +96,6 @@ public class ForkJoinSolver
                 // move player to goal
                 maze.move(player, current);
                 // search finished: reconstruct and return path
-                this.complete(pathFromTo(start,current));
                 return pathFromTo(start, current);
             }
             // if current node has not been visited yet
@@ -110,7 +110,7 @@ public class ForkJoinSolver
                     frontier.push(nb);
 
                     if (maze.neighbors(current).size() > 1){
-                        ForkJoinSolver test = new ForkJoinSolver(this.maze, 1 ,nb);
+                        ForkJoinSolver test = new ForkJoinSolver(this.maze, 1 ,nb, visited);
                         test.fork();
                     }
                     // if nb has not been already visited,
@@ -121,7 +121,7 @@ public class ForkJoinSolver
             }
         }
         // all nodes explored, no goal found
-        this.complete(null);
+
         return null;
     }
 }
