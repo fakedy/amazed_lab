@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <code>ForkJoinSolver</code> implements a solver for
@@ -31,6 +32,7 @@ public class ForkJoinSolver
      * @param maze   the maze to be searched
      */
     ArrayList<ForkJoinSolver> children = new ArrayList<>();
+    static AtomicBoolean goalFound = new AtomicBoolean();
     public ForkJoinSolver(Maze maze)
     {
         super(maze);
@@ -89,22 +91,23 @@ public class ForkJoinSolver
         // start with start node
         frontier.push(start);
         // as long as not all nodes have been processed
-        while (!frontier.empty()) {
+        while (!frontier.empty() && !goalFound.get()) {
             // get the new node to process
             int current = frontier.pop();
             // if current node has a goal
             if (maze.hasGoal(current)) {
                 // move player to goal
                 maze.move(player, current);
+                goalFound.set(true);
                 // search finished: reconstruct and return path
                 return pathFromTo(start, current);
             }
             // if current node has not been visited yet
-            if (!visited.contains(current)) {
+            if (visited.add(current)) {
                 // move player to current node
                 maze.move(player, current);
                 // mark node as visited
-                visited.add(current);
+                //visited.add(current);
                 // for every node nb adjacent to current
                 for (int nb: maze.neighbors(current)) {
                     // add nb to the nodes to be processed
@@ -116,6 +119,7 @@ public class ForkJoinSolver
                     if (!visited.contains(nb))
                         predecessor.put(nb, current);
                 }
+                // if we find more than 1 path to take create children and send them out on each path
                 if (frontier.size() > 1){
                     while(!frontier.isEmpty()){
                         ForkJoinSolver child = new ForkJoinSolver(this.maze, frontier.pop(), visited);
@@ -124,6 +128,7 @@ public class ForkJoinSolver
                     }
                 }
                 //wait for children and if one child has found goal then return path
+                //this will also combine the path of children and parents
                 for (ForkJoinSolver fs : children){
                     List<Integer> path = pathFromTo(start,current);
                     if (fs.join() != null){
@@ -135,6 +140,7 @@ public class ForkJoinSolver
             }
         }
         // all nodes explored, no goal found
+        // we can only reach this if a solver has not sent out children
         return null;
     }
 }
