@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <code>ForkJoinPool</code> object.
  */
 
-// barack hussein obama
 
 
 public class ForkJoinSolver
@@ -103,11 +102,11 @@ public class ForkJoinSolver
                 return pathFromTo(start, current);
             }
             // if current node has not been visited yet
+            // add it then move to it
             if (visited.add(current)) {
                 // move player to current node
                 maze.move(player, current);
                 // mark node as visited
-                //visited.add(current);
                 // for every node nb adjacent to current
                 for (int nb: maze.neighbors(current)) {
                     // add nb to the nodes to be processed
@@ -141,6 +140,7 @@ public class ForkJoinSolver
         }
         // all nodes explored, no goal found
         // we can only reach this if a solver has not sent out children
+        // or if we get a null value from joining children (no child finds a goal)
         return null;
     }
 }
